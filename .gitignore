@@ -1,0 +1,31 @@
+# IDE-specific folders
+.vscode/
+.vs/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor swap/backup files
+*.swp
+*.swo
+*~
+
+# Local environment / config files (in case any are ever added)
+.env
+.env.local
+
+# Logs
+*.log
+
+# Optional: local server artifacts
+.http-server-cache/
