@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HARWatch — Report</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div class="app">
+
+    <nav class="navbar">
+      <div class="navbar__inner">
+        <a href="index.html" class="navbar__brand">HARWatch</a>
+        <button class="navbar__toggle" aria-label="Toggle menu">☰</button>
+        <div class="navbar__links">
+          <a href="index.html">Upload</a>
+          <a href="report.html" class="active">Report</a>
+          <a href="waterfall.html">Waterfall</a>
+          <a href="rules.html">Rules</a>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="container">
+
+        <header class="flex flex--between">
+          <div>
+            <h1>Report</h1>
+            <p id="report-filename" class="text-muted">No file analyzed yet.</p>
+          </div>
+          <div class="flex">
+            <button id="export-json-btn" type="button">Export JSON</button>
+            <button id="export-csv-btn" type="button">Export CSV</button>
+          </div>
+        </header>
+
+        <section aria-labelledby="summary-heading">
+          <h2 id="summary-heading" class="sr-only">Summary</h2>
+          <div id="summary-cards" class="grid grid--4">
+            <!-- Populated by app.js: total requests, total size, load time, score -->
+          </div>
+        </section>
+
+        <section aria-labelledby="breakdown-heading">
+          <h2 id="breakdown-heading">Breakdown by type</h2>
+          <canvas id="type-chart" width="600" height="300"></canvas>
+        </section>
+
+        <section aria-labelledby="issues-heading">
+          <h2 id="issues-heading">Issues found</h2>
+          <ul id="issues-list" class="issues-list">
+            <!-- Populated by app.js: severity-ranked findings -->
+          </ul>
+        </section>
+
+        <section aria-labelledby="requests-heading">
+          <h2 id="requests-heading">All requests</h2>
+
+          <div class="flex flex--wrap">
+            <input id="request-search" type="search" placeholder="Filter by URL...">
+            <select id="request-sort">
+              <option value="time-desc">Slowest first</option>
+              <option value="size-desc">Largest first</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+
+          <table id="requests-table">
+            <thead>
+              <tr>
+                <th>URL</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated by app.js -->
+            </tbody>
+          </table>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/analyzer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

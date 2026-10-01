@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HARWatch — Waterfall</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div class="app">
+
+    <nav class="navbar">
+      <div class="navbar__inner">
+        <a href="index.html" class="navbar__brand">HARWatch</a>
+        <button class="navbar__toggle" aria-label="Toggle menu">☰</button>
+        <div class="navbar__links">
+          <a href="index.html">Upload</a>
+          <a href="report.html">Report</a>
+          <a href="waterfall.html" class="active">Waterfall</a>
+          <a href="rules.html">Rules</a>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="container">
+
+        <header>
+          <h1>Waterfall</h1>
+          <p class="text-muted">Visual timeline of every request during page load.</p>
+        </header>
+
+        <section aria-labelledby="legend-heading">
+          <h2 id="legend-heading" class="sr-only">Legend</h2>
+          <div class="flex flex--wrap" id="waterfall-legend">
+            <span class="legend-item"><span class="legend-swatch legend-swatch--blocked"></span> Blocked</span>
+            <span class="legend-item"><span class="legend-swatch legend-swatch--dns"></span> DNS</span>
+            <span class="legend-item"><span class="legend-swatch legend-swatch--connect"></span> Connect</span>
+            <span class="legend-item"><span class="legend-swatch legend-swatch--wait"></span> Wait (TTFB)</span>
+            <span class="legend-item"><span class="legend-swatch legend-swatch--receive"></span> Download</span>
+          </div>
+        </section>
+
+        <section aria-labelledby="timeline-heading">
+          <h2 id="timeline-heading" class="sr-only">Timeline</h2>
+          <div id="waterfall-container" class="waterfall-container">
+            <!-- Populated by waterfall.js: one row per request -->
+            <p class="text-muted">No analysis loaded. Upload a HAR file first.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/waterfall.js"></script>
+</body>
+</html>

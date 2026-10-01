@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HARWatch — Upload</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body>
+  <div class="app">
+
+    <nav class="navbar">
+      <div class="navbar__inner">
+        <a href="index.html" class="navbar__brand">HARWatch</a>
+        <button class="navbar__toggle" aria-label="Toggle menu">☰</button>
+        <div class="navbar__links">
+          <a href="index.html" class="active">Upload</a>
+          <a href="report.html">Report</a>
+          <a href="waterfall.html">Waterfall</a>
+          <a href="rules.html">Rules</a>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="container">
+
+        <header>
+          <h1>HARWatch</h1>
+          <p class="text-muted">Upload a HAR file to see what's slowing your site down.</p>
+        </header>
+
+        <section aria-labelledby="upload-heading">
+          <h2 id="upload-heading" class="sr-only">Upload HAR file</h2>
+
+          <div id="drop-zone" class="drop-zone">
+            <p>Drag and drop your HAR file here</p>
+            <p class="text-muted">or</p>
+            <button id="browse-btn" type="button">Browse files</button>
+            <input id="file-input" type="file" accept=".har" hidden>
+          </div>
+
+          <div id="upload-error" class="upload-error" hidden></div>
+
+          <div class="flex flex--between">
+            <button id="sample-btn" type="button">Try sample HAR</button>
+          </div>
+        </section>
+
+        <section aria-labelledby="history-heading">
+          <h2 id="history-heading">Recent analyses</h2>
+          <ul id="history-list" class="history-list">
+            <!-- Populated by app.js from LocalStorage -->
+            <li class="text-muted">No saved analyses yet.</li>
+          </ul>
+        </section>
+
+      </div>
+    </main>
+
+    <footer class="container">
+      <p class="text-muted">All analysis happens locally in your browser. Nothing is uploaded.</p>
+    </footer>
+
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
