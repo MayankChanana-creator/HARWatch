@@ -1,0 +1,259 @@
+
+/* =========================================================
+   HARWatch — Layout
+   ========================================================= */
+
+/* =========================================================
+   Application
+   ========================================================= */
+
+.app {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================================
+   Navigation
+   ========================================================= */
+
+.navbar {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+}
+
+.navbar__inner {
+    width: min(var(--max-width), calc(100% - 48px));
+    min-height: 76px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar__brand {
+    position: relative;
+
+    color: var(--ink);
+
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.navbar__brand {
+    color: var(--ink);
+
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+.navbar__links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.navbar__links a {
+    position: relative;
+
+    padding: 8px 11px;
+
+    color: var(--muted);
+
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    transition: color 160ms ease;
+}
+
+.navbar__links a:hover {
+    color: var(--ink);
+}
+
+.navbar__links a.active {
+    color: var(--ink);
+}
+
+.navbar__links a.active::after {
+    content: '';
+
+    position: absolute;
+
+    left: 11px;
+    right: 11px;
+    bottom: 2px;
+
+    height: 3px;
+
+    background: var(--accent);
+}
+
+.navbar__toggle {
+    display: none;
+
+    min-height: 36px;
+    padding: 6px 10px;
+
+    background: transparent;
+    color: var(--ink);
+
+    border: 1px solid var(--line-dark);
+}
+
+/* =========================================================
+   Main
+   ========================================================= */
+
+main {
+    flex: 1;
+
+    padding: clamp(55px, 9vw, 105px) 0 80px;
+}
+
+.container {
+    width: min(var(--max-width), calc(100% - 48px));
+    margin: 0 auto;
+}
+
+main > .container > header {
+    margin-bottom: 55px;
+}
+
+main > .container > header h1 {
+    max-width: 800px;
+}
+
+main > .container > header p {
+    max-width: 520px;
+
+    margin-top: 18px;
+
+    color: var(--muted);
+
+    font-size: 1rem;
+}
+
+/* =========================================================
+   Sections
+   ========================================================= */
+
+main section {
+    margin-top: 70px;
+}
+
+main section:first-of-type {
+    margin-top: 0;
+}
+
+main section > h2:not(.sr-only) {
+    padding-bottom: 13px;
+
+    border-bottom: 1px solid var(--line);
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+footer.container {
+    width: min(var(--max-width), calc(100% - 48px));
+
+    padding: 20px 0 30px;
+
+    border-top: 1px solid var(--line);
+}
+
+footer p {
+    margin: 0;
+
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 760px) {
+    .navbar__inner {
+        min-height: 68px;
+    }
+
+    .navbar__toggle {
+        display: block;
+    }
+
+    .navbar__links {
+        display: none;
+
+        position: absolute;
+
+        top: 68px;
+        left: 0;
+        right: 0;
+
+        z-index: 50;
+
+        padding: 12px 24px;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        background: var(--paper);
+
+        border-bottom: 1px solid var(--line);
+    }
+
+    .navbar__links.is-open {
+        display: flex;
+    }
+
+    .navbar__links a {
+        padding: 12px 8px;
+    }
+
+    .navbar__links a.active::after {
+        left: 8px;
+        right: auto;
+
+        width: 25px;
+    }
+
+    .grid--4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .container,
+    .navbar__inner,
+    footer.container {
+        width: min(100% - 30px, var(--max-width));
+    }
+
+    main {
+        padding-top: 50px;
+    }
+
+    main > .container > header {
+        margin-bottom: 40px;
+    }
+
+    .grid--4 {
+        grid-template-columns: 1fr;
+    }
+
+    .flex--between {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
