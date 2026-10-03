@@ -1,16 +1,15 @@
 /**
- * Reads a HAR file and validates its structure.
+ * HARWatch Parser
  *
- * This file is responsible only for:
- * 1. Reading the file
- * 2. Parsing JSON
- * 3. Validating that it is a HAR file
- *
- * It does NOT transform HAR entries yet.
+ * Responsibilities:
+ * 1. Read HAR files
+ * 2. Validate HAR structure
+ * 3. Convert HAR entries into a clean data model
  */
 
+
 /**
- * Read a File object and convert it into a JavaScript object.
+ * Read a HAR file and convert it into a JavaScript object.
  *
  * @param {File} file
  * @returns {Promise<Object>}
@@ -52,20 +51,94 @@ function readHarFile(file) {
  * @returns {boolean}
  */
 function validateHar(har) {
-    // Check that the parsed JSON is an object
     if (!har || typeof har !== "object" || Array.isArray(har)) {
         throw new Error("The file does not contain a valid HAR object.");
     }
 
-    // HAR must contain a log object
     if (!har.log || typeof har.log !== "object") {
         throw new Error("Invalid HAR file: missing 'log' object.");
     }
 
-    // HAR log must contain entries
     if (!Array.isArray(har.log.entries)) {
-        throw new Error("Invalid HAR file: 'log.entries' must be an array.");
+        throw new Error(
+            "Invalid HAR file: 'log.entries' must be an array."
+        );
     }
 
     return true;
 }
+
+
+/**
+ * Convert a HAR object into HARWatch's clean data model.
+ *
+ * @param {Object} har
+ * @returns {Object}
+ */
+function parseHar(har) {
+    validateHar(har);
+
+    const entries = har.log.entries;
+
+    const requests = entries.map((entry, index) => {
+        const request = entry.request || {};
+        const response = entry.response || {};
+        const timing = entry.timings || {};
+
+        return {
+            id: index + 1,
+
+            url: request.url || "",
+            method: request.method || "GET",
+
+            status: response.status || 0,
+            statusText: response.statusText || "",
+
+            mimeType: response.content?.mimeType || "",
+
+            requestSize: request.bodySize || 0,
+            responseSize: response.bodySize || 0,
+
+            startedDateTime: entry.startedDateTime || "",
+
+            time: entry.time || 0,
+
+            timings: {
+                blocked: timing.blocked || 0,
+                dns: timing.dns || 0,
+                connect: timing.connect || 0,
+                send: timing.send || 0,
+                wait: timing.wait || 0,
+                receive: timing.receive || 0,
+                ssl: timing.ssl || 0
+            },
+
+            cache: {
+                beforeRequest: entry.cache?.beforeRequest || {},
+                afterRequest: entry.cache?.afterRequest || {}
+            },
+
+            serverIPAddress: entry.serverIPAddress || "",
+
+            connection: entry.connection || "",
+
+            httpVersion: response.httpVersion || "",
+
+            redirectURL: response.redirectURL || ""
+        };
+    });
+
+    return {
+        version: har.log.version || "",
+        creator: har.log.creator || {},
+        requests: requests
+    };
+}
+
+
+/**
+ * Expose parser functions globally.
+ */
+window.readHarFile = readHarFile;
+window.validateHar = validateHar;
+window.parseHar = parseHar;

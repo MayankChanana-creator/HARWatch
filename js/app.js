@@ -63,13 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             setLoading(true);
+            const har = await window.readHarFile(file);
 
-            const har = await readHarFile(file);
+            const parsedData = window.parseHar(har);
 
-            console.log("Valid HAR file:", har);
+            console.log("Raw HAR:", har);
+            console.log("Parsed HAR:", parsedData);
 
-           
-            showSuccess(file, har);
+            showSuccess(file, parsedData);
 
         } catch (error) {
             showError(error.message);
@@ -107,16 +108,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     
-    function showSuccess(file, har) {
+    function showSuccess(file, parsedData) {
         console.log("File name:", file.name);
-        console.log("HAR version:", har.log.version);
-        console.log("Number of entries:", har.log.entries.length);
+        console.log("HAR version:", parsedData.version);
+        console.log("Number of requests:", parsedData.requests.length);
 
-     
-        errorBox.textContent =
-            `Valid HAR file loaded: ${file.name} ` +
-            `(${har.log.entries.length} requests)`;
+        errorBox.textContent = `Valid HAR file loaded: ${file.name} ` + `(${parsedData.requests.length} requests)`;
 
         errorBox.hidden = false;
-    }
+}
 });
