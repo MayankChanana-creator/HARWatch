@@ -99,6 +99,8 @@ function parseHar(har) {
             requestSize: request.bodySize || 0,
             responseSize: response.bodySize || 0,
 
+            responseHeaders: response.headers || [],
+
             startedDateTime: entry.startedDateTime || "",
 
             time: entry.time || 0,

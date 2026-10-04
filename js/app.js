@@ -113,8 +113,11 @@ function initializeUploadPage() {
 
             const parsedData = window.parseHar(har);
 
+            const analysis = window.analyzeHar(parsedData);
+
             console.log("Raw HAR:", har);
             console.log("Parsed HAR:", parsedData);
+            console.log("Analysis:", analysis);
 
             /*
              * Save the parsed analysis temporarily.
@@ -125,7 +128,8 @@ function initializeUploadPage() {
 
             const reportData = {
                 filename: file.name,
-                data: parsedData
+                data: parsedData,
+                analysis : analysis
             };
 
             sessionStorage.setItem(
