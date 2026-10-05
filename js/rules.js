@@ -288,3 +288,122 @@ window.getRuleRequestType = getRuleRequestType;
 window.checkOversizedAsset = checkOversizedAsset;
 window.checkMissingCompression = checkMissingCompression;
 window.checkMissingCaching = checkMissingCaching;
+
+
+
+/* =========================================================
+   RULE 4 — SLOW TTFB
+   ========================================================= */
+
+function checkSlowTTFB(request) {
+    const ttfb = Number(request.timings?.wait) || 0;
+
+    const threshold = 800;
+
+    if (ttfb <= threshold) {
+        return null;
+    }
+
+    return {
+        rule: "slow-ttfb",
+        title: "Slow TTFB",
+        message:
+            `Server took ${ttfb.toFixed(0)} ms to start responding.`,
+        requestId: request.id,
+        url: request.url,
+        value: ttfb,
+        threshold: threshold,
+        fix:
+            "Investigate server processing time, backend queries, " +
+            "API latency, or network distance."
+    };
+}
+
+
+/* =========================================================
+   RULE 5 — FAILED REQUEST
+   ========================================================= */
+
+function checkFailedRequest(request) {
+    const status = Number(request.status) || 0;
+
+    if (status < 400) {
+        return null;
+    }
+
+    let severityMessage;
+
+    if (status >= 500) {
+        severityMessage =
+            "The server returned a 5xx error.";
+    } else {
+        severityMessage =
+            "The request returned a 4xx client error.";
+    }
+
+    return {
+        rule: "failed-request",
+        title: "Failed request",
+        message:
+            `HTTP ${status}: ${severityMessage}`,
+        requestId: request.id,
+        url: request.url,
+        status: status,
+        fix:
+            "Investigate the response status and determine why " +
+            "the resource or request failed."
+    };
+}
+
+
+/* =========================================================
+   RULE 6 — THIRD-PARTY REQUEST
+   ========================================================= */
+
+function checkThirdPartyRequest(request, mainHostname) {
+    if (!mainHostname) {
+        return null;
+    }
+
+    let requestURL;
+
+    try {
+        requestURL = new URL(request.url);
+    } catch {
+        return null;
+    }
+
+    /*
+     * Ignore requests without a hostname.
+     */
+
+    if (!requestURL.hostname) {
+        return null;
+    }
+
+    /*
+     * Same hostname = first-party.
+     */
+
+    if (requestURL.hostname === mainHostname) {
+        return null;
+    }
+
+    return {
+        rule: "third-party-request",
+        title: "Third-party request",
+        message:
+            `Request is loaded from ${requestURL.hostname}.`,
+        requestId: request.id,
+        url: request.url,
+        hostname: requestURL.hostname,
+        fix:
+            "Review whether this external resource is necessary " +
+            "and whether it can be removed, self-hosted, or deferred."
+    };
+}
+
+
+window.checkSlowTTFB = checkSlowTTFB;
+window.checkFailedRequest = checkFailedRequest;
+window.checkThirdPartyRequest = checkThirdPartyRequest;
