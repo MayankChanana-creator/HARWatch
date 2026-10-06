@@ -1,46 +1,24 @@
-/**
- * HARWatch Analysis Engine
- *
- * Runs all performance rules against parsed requests.
- */
-
 function analyzeHar(data) {
-    if (!data || !Array.isArray(data.requests)) {
+    if(!data || !Array.isArray(data.requests)){
         throw new Error(
             "Cannot analyze HAR data: requests are missing."
         );
     }
-
-
     const findings = [];
-
-    /*
-     * Determine the hostname of the main page.
-     *
-     * We use the first request as the page origin.
-     */
-
     let mainHostname = "";
-
-    if (data.requests.length > 0) {
-        try {
+    if(data.requests.length > 0){
+        try{
             const firstURL = new URL(
                 data.requests[0].url
             );
 
             mainHostname = firstURL.hostname;
-        } catch {
+        }
+        catch{
             mainHostname = "";
         }
     }
-
-
-    /*
-     * Run every rule against every request.
-     */
-
     data.requests.forEach((request) => {
-
         const rules = [
             () => window.checkOversizedAsset(request),
 
@@ -57,86 +35,56 @@ function analyzeHar(data) {
                 mainHostname
             )
         ];
-
-
         rules.forEach((rule) => {
             const finding = rule();
-
-            if (finding) {
+            if(finding){
                 findings.push(finding);
             }
         });
     });
 
 
-    /*
-     * Add severity to every finding.
-     */
-
-    const scoredFindings = findings.map(
-        addSeverity
-    );
-
-
-    /*
-     * Summary
-     */
+    const scoredFindings = findings.map(addSeverity);
 
     const summary = {
         totalRequests: data.requests.length,
-
         totalFindings: scoredFindings.length,
-
         oversizedAssets: countRule(
             scoredFindings,
             "oversized-asset"
         ),
-
         missingCompression: countRule(
             scoredFindings,
             "missing-compression"
         ),
-
         missingCaching: countRule(
             scoredFindings,
             "missing-caching"
         ),
-
         slowTTFB: countRule(
             scoredFindings,
             "slow-ttfb"
         ),
-
         failedRequests: countRule(
             scoredFindings,
             "failed-request"
         ),
-
         thirdPartyRequests: countRule(
             scoredFindings,
             "third-party-request"
         )
     };
-
-
-    return {
+    return{
         findings: scoredFindings,
         summary: summary
     };
 }
 
 
-/* =========================================================
-   SEVERITY
-   ========================================================= */
 
 function addSeverity(finding) {
-
     let severity = "low";
-
-
-    switch (finding.rule) {
-
+    switch(finding.rule){
         case "oversized-asset":
             severity = "medium";
             break;
@@ -154,48 +102,36 @@ function addSeverity(finding) {
 
         case "slow-ttfb":
 
-            if (finding.value > 1500) {
+            if(finding.value > 1500){
                 severity = "high";
-            } else {
+            } 
+            else{
                 severity = "medium";
             }
-
             break;
-
 
         case "failed-request":
 
-            if (finding.status >= 500) {
+            if(finding.status >= 500){
                 severity = "high";
-            } else {
+            } 
+            else{
                 severity = "medium";
             }
 
             break;
-
-
         case "third-party-request":
             severity = "low";
             break;
     }
-
-
     return {
         ...finding,
         severity: severity
     };
 }
 
-
-/* =========================================================
-   COUNT FINDINGS
-   ========================================================= */
-
 function countRule(findings, ruleName) {
-    return findings.filter(
-        (finding) => finding.rule === ruleName
-    ).length;
+    return findings.filter((finding) => finding.rule === ruleName).length;
 }
-
 
 window.analyzeHar = analyzeHar;

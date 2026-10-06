@@ -15,59 +15,30 @@
 <body>
 
 <div class="app">
-
-    <!-- =========================
-         NAVBAR
-         ========================= -->
-
     <nav class="navbar">
 
         <div class="navbar__inner">
 
-            <a href="index.html" class="navbar__brand">
-                HARWATCH
-            </a>
+            <a href="index.html" class="navbar__brand">HARWATCH</a>
 
-            <button
-                class="navbar__toggle"
-                aria-label="Toggle menu">
-                ☰
-            </button>
+            <button class="navbar__toggle" aria-label="Toggle menu">☰</button>
 
             <div class="navbar__links">
 
-                <a href="index.html" class="active">
-                    Upload
-                </a>
+                <a href="index.html" class="active">Upload</a>
 
-                <a href="report.html">
-                    Report
-                </a>
+                <a href="report.html">Report</a>
 
-                <a href="waterfall.html">
-                    Waterfall
-                </a>
+                <a href="waterfall.html">Waterfall</a>
 
-                <a href="rules.html">
-                    Rules
-                </a>
-
+                <a href="rules.html">Rules</a>
             </div>
-
         </div>
-
     </nav>
-
-
-    <!-- =========================
-         MAIN
-         ========================= -->
 
     <main>
 
         <div class="container">
-
-            <!-- HERO -->
 
             <header class="hero">
 
@@ -75,93 +46,53 @@
 
                     <h1 id="hero-title"></h1>
 
-                    <span
-                        class="hero-scanner"
-                        aria-hidden="true">
-                    </span>
-
+                    <span class="hero-scanner" aria-hidden="true"></span>
                 </div>
 
 
-                <p class="hero-description">
-                    Upload a HAR file to see what's slowing your site down.
-                </p>
+                <p class="hero-description">Upload a HAR file to see what's slowing your site down.</p>
 
             </header>
 
 
-            <!-- =========================
-                 UPLOAD
-                 ========================= -->
+            <section class="upload-section" aria-labelledby="upload-heading">
 
-            <section
-                class="upload-section"
-                aria-labelledby="upload-heading">
-
-                <h2
-                    id="upload-heading"
-                    class="sr-only">
-                    Upload HAR file
-                </h2>
+                <h2 id="upload-heading" class="sr-only">Upload HAR file</h2>
 
 
-                <div
-                    id="drop-zone"
-                    class="drop-zone">
+                <div id="drop-zone" class="drop-zone">
 
                     <div class="drop-zone__meta">
 
-                        <span>
-                            HAR / HTTP ARCHIVE
-                        </span>
+                        <span>HAR / HTTP ARCHIVE</span>
 
-                        <span>
-                            LOCAL ANALYSIS
-                        </span>
+                        <span>LOCAL ANALYSIS</span>
 
                     </div>
 
 
                     <div class="drop-zone__content">
 
-                        <p class="drop-zone__title">
-                            Drag and drop your HAR file here
-                        </p>
+                        <p class="drop-zone__title">Drag and drop your HAR file here</p>
 
-                        <p class="drop-zone__or">
-                            or
-                        </p>
+                        <p class="drop-zone__or">or</p>
 
-                        <button
-                            id="browse-btn"
-                            type="button">
-                            Browse files
-                        </button>
+                        <button id="browse-btn" type="button">Browse files</button>
 
-                        <input
-                            id="file-input"
-                            type="file"
-                            accept=".har"
-                            hidden>
+                        <input id="file-input" type="file" accept=".har" hidden>
 
                     </div>
 
                 </div>
 
 
-                <div
-                    id="upload-error"
-                    class="upload-error"
-                    hidden>
+                <div id="upload-error" class="upload-error" hidden>
                 </div>
 
 
                 <div class="upload-actions">
 
-                    <button
-                        id="sample-btn"
-                        type="button">
-                        Try sample HAR
+                    <button id="sample-btn" type="button">Try sample HAR
                     </button>
 
                 </div>
@@ -169,38 +100,24 @@
             </section>
 
 
-            <!-- =========================
-                 HISTORY
-                 ========================= -->
-
-            <section
-                class="history-section"
-                aria-labelledby="history-heading">
+            <section class="history-section" aria-labelledby="history-heading">
 
                 <div class="section-heading">
 
                     <div>
 
-                        <span class="section-label">
-                            HISTORY
-                        </span>
+                        <span class="section-label">HISTORY</span>
 
-                        <h2 id="history-heading">
-                            Recent analyses
-                        </h2>
+                        <h2 id="history-heading">Recent analyses</h2>
 
                     </div>
 
                 </div>
 
 
-                <ul
-                    id="history-list"
-                    class="history-list">
+                <ul id="history-list" class="history-list">
 
-                    <li class="text-muted">
-                        No saved analyses yet.
-                    </li>
+                    <li class="text-muted">No saved analyses yet.</li>
 
                 </ul>
 
@@ -210,26 +127,15 @@
 
     </main>
 
-
-    <!-- =========================
-         FOOTER
-         ========================= -->
-
     <footer class="container">
 
-        <p class="text-muted">
-            All analysis happens locally in your browser.
-            Nothing is uploaded.
-        </p>
+        <p class="text-muted">All analysis happens locally in your browser.Nothing is uploaded.</p>
 
     </footer>
 
 </div>
 
 
-<!-- =========================
-     JAVASCRIPT
-     ========================= -->
 
 <script src="js/storage.js"></script>
 <script src="js/parser.js"></script>

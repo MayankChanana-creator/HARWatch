@@ -1,27 +1,10 @@
-/**
- * HARWatch Analysis Rules
- *
- * Contains:
- * - Rule thresholds
- * - Request classification
- * - Header helpers
- * - Individual performance checks
- */
-
-
-/* =========================================================
-   RULE CONFIGURATION
-   ========================================================= */
-
 const RULE_CONFIG = {
-
     oversizedAsset: {
         imageBytes: 200 * 1024,
         scriptBytes: 200 * 1024,
         stylesheetBytes: 200 * 1024,
         otherBytes: 500 * 1024
     },
-
     compressibleTypes: [
         "html",
         "css",
@@ -30,7 +13,6 @@ const RULE_CONFIG = {
         "xml",
         "text"
     ],
-
     cacheableTypes: [
         "css",
         "javascript",
@@ -40,23 +22,6 @@ const RULE_CONFIG = {
     ]
 };
 
-
-/* =========================================================
-   HEADER HELPERS
-   ========================================================= */
-
-/**
- * Find a response header by name.
- *
- * HAR headers are stored as:
- *
- * [
- *     {
- *         name: "Content-Encoding",
- *         value: "gzip"
- *     }
- * ]
- */
 function getResponseHeader(request, headerName) {
     const headers = request.responseHeaders || [];
 
@@ -73,60 +38,42 @@ function getResponseHeader(request, headerName) {
 }
 
 
-/* =========================================================
-   REQUEST TYPE
-   ========================================================= */
-
 function getRuleRequestType(mimeType) {
     const type = (mimeType || "").toLowerCase();
 
-    if (type.includes("html")) {
+    if(type.includes("html")){
         return "html";
     }
 
-    if (type.includes("css")) {
+    if(type.includes("css")){
         return "css";
     }
 
-    if (
-        type.includes("javascript") ||
-        type.includes("ecmascript")
-    ) {
+    if(type.includes("javascript") || type.includes("ecmascript")){
         return "javascript";
     }
 
-    if (type.includes("json")) {
+    if(type.includes("json")){
         return "json";
     }
 
-    if (type.includes("xml")) {
+    if(type.includes("xml")){
         return "xml";
     }
 
-    if (type.startsWith("image/")) {
+    if(type.startsWith("image/")){
         return "image";
     }
-
-    if (
-        type.includes("font") ||
-        type.includes("woff") ||
-        type.includes("ttf") ||
-        type.includes("opentype")
-    ) {
+    if(type.includes("font") || type.includes("woff") || type.includes("ttf") || type.includes("opentype")){
         return "font";
     }
 
-    if (type.startsWith("text/")) {
+    if(type.startsWith("text/")){
         return "text";
     }
 
     return "other";
 }
-
-
-/* =========================================================
-   RULE 1 — OVERSIZED ASSET
-   ========================================================= */
 
 function checkOversizedAsset(request) {
     const type = getRuleRequestType(request.mimeType);
@@ -135,7 +82,7 @@ function checkOversizedAsset(request) {
 
     let threshold;
 
-    switch (type) {
+    switch(type){
         case "image":
             threshold = RULE_CONFIG.oversizedAsset.imageBytes;
             break;
@@ -152,11 +99,11 @@ function checkOversizedAsset(request) {
             threshold = RULE_CONFIG.oversizedAsset.otherBytes;
     }
 
-    if (size <= threshold) {
+    if(size <= threshold){
         return null;
     }
 
-    return {
+    return{
         rule: "oversized-asset",
         title: "Oversized asset",
         message:
@@ -172,41 +119,27 @@ function checkOversizedAsset(request) {
 }
 
 
-/* =========================================================
-   RULE 2 — MISSING COMPRESSION
-   ========================================================= */
-
 function checkMissingCompression(request) {
     const type = getRuleRequestType(request.mimeType);
 
-    if (!RULE_CONFIG.compressibleTypes.includes(type)) {
+    if(!RULE_CONFIG.compressibleTypes.includes(type)){
         return null;
     }
 
     const size = Number(request.responseSize) || 0;
 
-    /*
-     * Tiny responses don't provide enough benefit to justify
-     * reporting compression as an issue.
-     */
-    if (size < 1024) {
+    if(size < 1024){
         return null;
     }
 
-    const encoding = getResponseHeader(
-        request,
-        "content-encoding"
-    ).toLowerCase();
+    const encoding = getResponseHeader(request,"content-encoding").toLowerCase();
 
-    const compressed =
-        encoding.includes("gzip") ||
-        encoding.includes("br");
-
-    if (compressed) {
+    const compressed = encoding.includes("gzip") || encoding.includes("br");
+    if(compressed){
         return null;
     }
 
-    return {
+    return{
         rule: "missing-compression",
         title: "Missing compression",
         message:
@@ -220,32 +153,19 @@ function checkMissingCompression(request) {
 }
 
 
-/* =========================================================
-   RULE 3 — MISSING CACHING
-   ========================================================= */
-
 function checkMissingCaching(request) {
     const type = getRuleRequestType(request.mimeType);
 
-    if (!RULE_CONFIG.cacheableTypes.includes(type)) {
+    if(!RULE_CONFIG.cacheableTypes.includes(type)){
         return null;
     }
 
-    const cacheControl = getResponseHeader(
-        request,
-        "cache-control"
-    );
-
-    const expires = getResponseHeader(
-        request,
-        "expires"
-    );
-
-    if (cacheControl || expires) {
+    const cacheControl = getResponseHeader(request,"cache-control");
+    const expires = getResponseHeader(request,"expires");
+    if(cacheControl || expires){
         return null;
     }
-
-    return {
+    return{
         rule: "missing-caching",
         title: "Missing caching",
         message:
@@ -259,26 +179,17 @@ function checkMissingCaching(request) {
 }
 
 
-/* =========================================================
-   FORMATTING
-   ========================================================= */
-
 function formatRuleBytes(bytes) {
-    if (bytes < 1024) {
+    if(bytes < 1024){
         return `${bytes} B`;
     }
 
-    if (bytes < 1024 * 1024) {
+    if(bytes < 1024 * 1024){
         return `${(bytes / 1024).toFixed(1)} KB`;
     }
 
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-
-
-/* =========================================================
-   GLOBAL EXPORT
-   ========================================================= */
 
 window.RULE_CONFIG = RULE_CONFIG;
 
@@ -290,17 +201,12 @@ window.checkMissingCompression = checkMissingCompression;
 window.checkMissingCaching = checkMissingCaching;
 
 
-
-/* =========================================================
-   RULE 4 — SLOW TTFB
-   ========================================================= */
-
 function checkSlowTTFB(request) {
     const ttfb = Number(request.timings?.wait) || 0;
 
     const threshold = 800;
 
-    if (ttfb <= threshold) {
+    if(ttfb <= threshold){
         return null;
     }
 
@@ -319,29 +225,23 @@ function checkSlowTTFB(request) {
     };
 }
 
-
-/* =========================================================
-   RULE 5 — FAILED REQUEST
-   ========================================================= */
-
 function checkFailedRequest(request) {
     const status = Number(request.status) || 0;
 
-    if (status < 400) {
+    if(status < 400){
         return null;
     }
 
     let severityMessage;
 
-    if (status >= 500) {
-        severityMessage =
-            "The server returned a 5xx error.";
-    } else {
-        severityMessage =
-            "The request returned a 4xx client error.";
+    if(status >= 500){
+        severityMessage = "The server returned a 5xx error.";
+    } 
+    else{
+        severityMessage = "The request returned a 4xx client error.";
     }
 
-    return {
+    return{
         rule: "failed-request",
         title: "Failed request",
         message:
@@ -356,40 +256,29 @@ function checkFailedRequest(request) {
 }
 
 
-/* =========================================================
-   RULE 6 — THIRD-PARTY REQUEST
-   ========================================================= */
-
 function checkThirdPartyRequest(request, mainHostname) {
-    if (!mainHostname) {
+    if(!mainHostname){
         return null;
     }
 
     let requestURL;
 
-    try {
+    try{
         requestURL = new URL(request.url);
-    } catch {
+    }
+    catch{
         return null;
     }
 
-    /*
-     * Ignore requests without a hostname.
-     */
-
-    if (!requestURL.hostname) {
+    if(!requestURL.hostname){
         return null;
     }
 
-    /*
-     * Same hostname = first-party.
-     */
-
-    if (requestURL.hostname === mainHostname) {
+    if(requestURL.hostname === mainHostname){
         return null;
     }
 
-    return {
+    return{
         rule: "third-party-request",
         title: "Third-party request",
         message:
