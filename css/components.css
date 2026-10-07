@@ -770,3 +770,309 @@ textarea:focus-visible {
     border-color: var(--accent-dark);
     background: #eef3df;
 }
+
+.waterfall-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 42px;
+}
+
+.waterfall-header h1 {
+    margin: 8px 0 6px;
+}
+
+.waterfall-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.waterfall-controls label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.waterfall-controls select {
+    min-width: 150px;
+}
+.waterfall-section {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.waterfall {
+    min-width: 850px;
+    border-top: 1px solid var(--line);
+}
+
+
+.waterfall__scale {
+    display: grid;
+    grid-template-columns: 300px minmax(550px, 1fr);
+    min-height: 48px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(216, 223, 218, 0.18);
+}
+
+.waterfall__request-label {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+}
+
+.waterfall__timeline {
+    position: relative;
+    min-width: 0;
+}
+
+.waterfall__scale-marker {
+    position: absolute;
+    top: 16px;
+
+    transform: translateX(-50%);
+
+    font-size: 10px;
+    color: var(--muted);
+
+    white-space: nowrap;
+}
+
+
+.waterfall__row {
+    display: grid;
+    grid-template-columns: 300px minmax(550px, 1fr);
+
+    min-height: 46px;
+
+    border-bottom: 1px solid var(--line);
+}
+
+.waterfall__row:hover {
+    background: rgba(215, 242, 107, 0.08);
+}
+
+
+.waterfall__label {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+    gap: 9px;
+
+    padding: 7px 16px;
+}
+
+.waterfall__method {
+    flex: 0 0 auto;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+
+    color: var(--accent-dark);
+}
+
+.waterfall__url {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 12px;
+    color: var(--ink);
+}
+
+.waterfall__timeline--row {
+    position: relative;
+
+    background-image:
+        linear-gradient(
+            to right,
+            transparent calc(20% - 1px),
+            var(--line) 20%,
+            transparent calc(20% + 1px)
+        );
+
+    background-size: 20% 100%;
+}
+
+
+.waterfall__bar {
+    position: absolute;
+
+    top: 13px;
+    height: 20px;
+
+    display: flex;
+
+    min-width: 3px;
+
+    overflow: visible;
+
+    border-radius: 2px;
+}
+
+.waterfall__phase {
+    display: block;
+
+    height: 100%;
+
+    min-width: 1px;
+}
+
+.waterfall__phase--blocked {
+    background: #a8b0aa;
+}
+
+.waterfall__phase--dns {
+    background: #8c9b90;
+}
+
+.waterfall__phase--connect {
+    background: #65776c;
+}
+
+.waterfall__phase--send {
+    background: #4d5d53;
+}
+
+.waterfall__phase--wait {
+    background: var(--accent-dark);
+}
+
+.waterfall__phase--receive {
+    background: var(--accent);
+}
+
+
+.waterfall__duration {
+    position: absolute;
+
+    left: calc(100% + 8px);
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+
+    color: var(--muted);
+
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+
+.waterfall-empty {
+    padding: 60px 20px;
+
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+
+    text-align: center;
+
+    color: var(--muted);
+}
+
+.waterfall-legend {
+    margin-top: 42px;
+    padding-top: 24px;
+
+    border-top: 1px solid var(--line);
+}
+
+.waterfall-legend__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+
+    margin-top: 14px;
+}
+
+.waterfall-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.legend-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+}
+
+.legend-dot--blocked {
+    background: #a8b0aa;
+}
+
+.legend-dot--dns {
+    background: #8c9b90;
+}
+
+.legend-dot--connect {
+    background: #65776c;
+}
+
+.legend-dot--wait {
+    background: var(--accent-dark);
+}
+
+.legend-dot--receive {
+    background: var(--accent);
+}
+
+@media (max-width: 800px) {
+
+    .waterfall-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .waterfall-controls {
+        width: 100%;
+    }
+
+    .waterfall-controls select {
+        flex: 1;
+    }
+
+    .waterfall__scale,
+    .waterfall__row {
+        grid-template-columns: 220px minmax(550px, 1fr);
+    }
+}
+.waterfall__request-label {
+    overflow: visible;
+    white-space: nowrap;
+}
+
+.waterfall__label {
+    overflow: hidden;
+    min-width: 0;
+}
+
+.waterfall__method {
+    flex-shrink: 0;
+    min-width: 28px;
+}
+
+.waterfall__url {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

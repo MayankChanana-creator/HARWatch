@@ -582,3 +582,363 @@ function setupRequestControls(){
         });
     }
 }
+
+
+function renderWaterfall(report){
+
+    const waterfall = document.getElementById("waterfall");
+    const emptyState = document.getElementById("waterfall-empty");
+    const rowsContainer = document.getElementById("waterfall-rows");
+    const scaleContainer = document.getElementById("waterfall-scale");
+    const filenameElement = document.getElementById("waterfall-filename");
+
+    if(!waterfall || !rowsContainer){
+        return;
+    }
+
+    if(!report || !report.data || !Array.isArray(report.data.requests)){
+
+        waterfall.hidden = true;
+
+        if(emptyState){
+            emptyState.hidden = false;
+        }
+        return;
+    }
+
+    const requests = report.data.requests;
+
+    if(filenameElement){
+        filenameElement.textContent = report.filename || "HAR analysis";
+    }
+    if(requests.length === 0){
+        waterfall.hidden = true;
+        if(emptyState){
+            emptyState.hidden = false;
+            emptyState.textContent = "No requests were found in this HAR file.";
+        }
+        return;
+    }
+
+    if(emptyState){
+        emptyState.hidden = true;
+    }
+    waterfall.hidden = false;
+    renderWaterfallRows(requests,rowsContainer,scaleContainer);
+}
+function renderWaterfallRows(requests,rowsContainer,scaleContainer){
+    const sortedRequests = sortWaterfallRequests(requests);
+    rowsContainer.innerHTML = "";
+    const startTimes = sortedRequests.map(request => new Date(request.startedDateTime).getTime()).filter(Number.isFinite);
+
+    const earliestStart = startTimes.length
+        ? Math.min(...startTimes)
+        : 0;
+    const timelineEnd = sortedRequests.reduce(
+        (maximum, request) => {
+
+            const start = getRequestStartOffset(
+                request,
+                earliestStart
+            );
+
+            const duration = Number(request.time) || 0;
+
+            return Math.max(
+                maximum,
+                start + duration
+            );
+
+        },
+        0
+    );
+
+    const totalDuration = Math.max(timelineEnd,1);
+
+    renderWaterfallScale(scaleContainer,totalDuration);
+    sortedRequests.forEach((request, index) => {
+        const row = createWaterfallRow(
+            request,
+            index,
+            earliestStart,
+            totalDuration
+        );
+        rowsContainer.appendChild(row);
+    });
+}
+function createWaterfallRow(request,index,earliestStart,totalDuration){
+    const row = document.createElement("div");
+    row.className = "waterfall__row";
+    const label = document.createElement("div");
+    label.className = "waterfall__label";
+    const url = request.url || "Unknown request";
+    label.innerHTML = `
+        <span
+            class="waterfall__method">
+            ${escapeHtml(request.method || "GET")}
+        </span>
+
+        <span
+            class="waterfall__url"
+            title="${escapeHtml(url)}">
+            ${escapeHtml(getDisplayUrl(url))}
+        </span>
+    `;
+    const timeline = document.createElement("div");
+    timeline.className = "waterfall__timeline waterfall__timeline--row";
+    const startOffset = getRequestStartOffset(request,earliestStart);
+    const duration = Math.max(Number(request.time) || 0,0);
+    const left = (startOffset / totalDuration) * 100;
+    const width = Math.max((duration / totalDuration) * 100,0.4);
+    const bar = document.createElement("div");
+    bar.className = "waterfall__bar";
+    bar.style.left = `${left}%`;
+    bar.style.width = `${width}%`;
+    const phases = getTimingPhases(request);
+    phases.forEach(phase => {
+        if(phase.duration <= 0){
+            return;
+        }
+        const phaseElement = document.createElement("span");
+        phaseElement.className = `waterfall__phase waterfall__phase--${phase.name}`;
+
+        phaseElement.style.width = `${(phase.duration / duration) * 100}%`;
+
+        phaseElement.title = `${formatPhaseName(phase.name)}: ${phase.duration.toFixed(1)} ms`;
+        bar.appendChild(phaseElement);
+    });
+
+    const durationLabel = document.createElement("span");
+
+    durationLabel.className = "waterfall__duration";
+
+    durationLabel.textContent = `${duration.toFixed(0)} ms`;
+
+    bar.appendChild(durationLabel);
+    timeline.appendChild(bar);
+    row.appendChild(label);
+    row.appendChild(timeline);
+    return row;
+}
+
+function getTimingPhases(request) {
+    const timings = request.timings || {};
+
+    return[
+        {
+            name: "blocked",
+            duration: positiveNumber(timings.blocked)
+        },
+        {
+            name: "dns",
+            duration: positiveNumber(timings.dns)
+        },
+        {
+            name: "connect",
+            duration: positiveNumber(timings.connect)
+        },
+        {
+            name: "send",
+            duration: positiveNumber(timings.send)
+        },
+        {
+            name: "wait",
+            duration: positiveNumber(timings.wait)
+        },
+        {
+            name: "receive",
+            duration: positiveNumber(timings.receive)
+        }
+    ];
+}
+
+
+function positiveNumber(value) {
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number) || number < 0) {
+        return 0;
+    }
+
+    return number;
+}
+
+
+function getRequestStartOffset(request,earliestStart){
+    const start = new Date(request.startedDateTime).getTime();
+    if(!Number.isFinite(start)){
+        return 0;
+    }
+
+    return Math.max(start - earliestStart,0);
+}
+
+
+function renderWaterfallScale(scaleContainer,totalDuration){
+    if(!scaleContainer){
+        return;
+    }
+    scaleContainer.innerHTML = "";
+    const points = 5;
+    for(let i = 0; i <= points; i++){
+        const marker = document.createElement("span");
+        marker.className = "waterfall__scale-marker";
+        const position = (i / points) * 100;
+        marker.style.left = `${position}%`;
+
+        const time = (totalDuration * i) / points;
+
+        marker.textContent = formatMilliseconds(time);
+
+        scaleContainer.appendChild(marker);
+    }
+}
+
+
+function formatMilliseconds(value){
+
+    if(value < 1000){
+        return `${value.toFixed(0)} ms`;
+    }
+
+    return `${(value / 1000).toFixed(2)} s`;
+}
+
+
+function formatPhaseName(name){
+
+    const names = {
+        blocked: "Blocked",
+        dns: "DNS",
+        connect: "Connect",
+        send: "Send",
+        wait: "Wait / TTFB",
+        receive: "Receive"
+    };
+
+    return names[name] || name;
+}
+
+
+function getDisplayUrl(url){
+
+    try{
+
+        const parsed = new URL(url);
+        return parsed.pathname + parsed.search;
+    } 
+    catch{
+        return url;
+
+    }
+}
+
+
+function sortWaterfallRequests(requests){
+
+    const select = document.getElementById("waterfall-sort");
+
+    const sorted = [...requests];
+
+    if(!select){
+        return sorted;
+    }
+
+    switch(select.value){
+
+        case "duration":
+            sorted.sort(
+                (a, b) =>
+                    (Number(b.time) || 0) -
+                    (Number(a.time) || 0)
+            );
+
+            break;
+
+
+        case "size":
+
+            sorted.sort(
+                (a, b) =>
+                    (Number(b.responseSize) || 0) -
+                    (Number(a.responseSize) || 0)
+            );
+
+            break;
+
+
+        case "start":
+
+        default:
+
+            sorted.sort(
+                (a, b) =>
+                    new Date(a.startedDateTime).getTime() -
+                    new Date(b.startedDateTime).getTime()
+            );
+
+            break;
+    }
+
+    return sorted;
+}
+
+
+function setupWaterfallControls(){
+
+    const select = document.getElementById("waterfall-sort");
+
+    if(!select){
+        return;
+    }
+
+    select.addEventListener(
+        "change",
+        () => {
+
+            const report =
+                getStoredReport();
+
+            if (report) {
+                renderWaterfall(report);
+            }
+
+        }
+    );
+}
+
+
+function getStoredReport(){
+    try{
+
+        const stored = sessionStorage.getItem("harwatch-report");
+        if (!stored) {
+            return null;
+        }
+        return JSON.parse(stored);
+
+    }
+    catch(error){
+
+        console.error("Could not load stored HAR report:",error);
+        return null;
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded",() => {
+        const waterfallPage = document.getElementById("waterfall");
+
+        if(!waterfallPage){
+            return;
+        }
+
+        const report = getStoredReport();
+
+        renderWaterfall(report);
+
+        setupWaterfallControls();
+
+    }
+);
