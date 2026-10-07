@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+let currentRequests = [];
 function initializeUploadPage() {
     const dropZone = document.getElementById("drop-zone");
     const browseButton = document.getElementById("browse-btn");
@@ -65,6 +66,10 @@ function initializeUploadPage() {
             console.log("Raw HAR:", har);
             console.log("Parsed HAR:", parsedData);
             console.log("Analysis:", analysis);
+            currentRequests = parsedData.requests;
+            renderIssues(analysis.findings);
+            renderRequests(sortRequests(currentRequests));
+            setupRequestControls();
             const reportData = {
                 filename: file.name,
                 data: parsedData,
@@ -138,12 +143,23 @@ function initializeReportPage() {
 function renderReport(report) {
     const filenameElement = document.getElementById("report-filename");
 
-    if(filenameElement){
+    if (filenameElement) {
         filenameElement.textContent = report.filename;
     }
+
     const data = report.data;
+
     renderSummaryCards(data);
     renderTypeChart(data);
+
+    renderIssues(report.analysis?.findings || []);
+    currentRequests = data.requests || [];
+
+    renderRequests(
+        sortRequests(currentRequests)
+    );
+
+    setupRequestControls();
 }
 
 function renderSummaryCards(data) {
@@ -359,4 +375,210 @@ function formatTime(milliseconds) {
         return `${milliseconds.toFixed(0)} ms`;
     }
     return `${(milliseconds / 1000).toFixed(2)} s`;
+}
+
+function renderIssues(findings){
+    const issuesList  = document.getElementById("issues-list");
+    if(!issuesList){
+        return;
+    }
+    issuesList.innerHTML = "";
+    if(!findings || findings.length === 0){
+        const emptyItem = document.createElement("li");
+        emptyItem.className = "issue issue--empty";
+        emptyItem.textContent = "No performance issues were detected.";
+        issuesList.appendChild(emptyItem);
+        return;
+    }
+
+    const severityOrder = {
+        high : 1,
+        medium : 2,
+        low : 3
+    };
+    const sortedFindings = [...findings].sort(
+        (a,b) => {
+            return ((severityOrder[a.severity] || 99) - (severityOrder[b.severity] || 99));
+        }
+    );
+    sortedFindings.forEach((finding) => {
+        const item = document.createElement("li");
+        item.className = `issue issue--${finding.severity}`;
+         item.innerHTML = `
+            <div class="issue__header">
+
+                <span class="issue__severity">
+                    ${escapeHtml(
+                        finding.severity.toUpperCase()
+                    )}
+                </span>
+
+                <strong class="issue__title">
+                    ${escapeHtml(
+                        finding.title
+                    )}
+                </strong>
+
+            </div>
+
+            <p class="issue__message">
+                ${escapeHtml(
+                    finding.message
+                )}
+            </p>
+
+            <p class="issue__url">
+                ${escapeHtml(
+                    finding.url
+                )}
+            </p>
+
+            ${
+                finding.fix
+                    ? `
+                    <p class="issue__fix">
+                        Fix: ${escapeHtml(
+                            finding.fix
+                        )}
+                    </p>
+                    `
+                    : ""
+            }
+        `;
+        issuesList.appendChild(item);
+    });
+}
+
+function escapeHtml(value){
+    return String(value ?? "")
+    .replace(/&/g, "&amp")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderRequests(requests){
+    const table = document.getElementById("requests-table");
+    if(!table){
+        return;
+    }
+    const tbody = table.querySelector("tbody");
+    if(!tbody){
+        return;
+    }
+    tbody.innerHTML = "";
+    if(!requests || requests.length === 0){
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td colspan="5">
+            No requests found.
+            </td>
+        `;
+        tbody.appendChild(row);
+        return;
+    }
+    requests.forEach((request) => {
+        const row = document.createElement("tr");
+        const status = Number(request.status) || 0;
+        const size = Number(request.responseSize) || 0;
+        const time = Number(request.time) || 0;
+        row.innerHTML = `
+            <td
+                class="request-url"
+                title="${escapeHtml(request.url)}"
+            >
+                ${escapeHtml(request.url)}
+            </td>
+
+            <td>
+                <span class="status status--${getStatusClass(status)}">
+                    ${status}
+                </span>
+            </td>
+
+            <td>
+                ${escapeHtml(request.mimeType || "Unknown")}
+            </td>
+
+            <td>
+                ${formatBytes(size)}
+            </td>
+
+            <td>
+                ${time.toFixed(0)} ms
+            </td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+function getStatusClass(status){
+    if(status >= 500){
+        return "error";
+    }
+    if(status >= 400){
+        return "warning";
+    }
+    if(status >= 300){
+        return "redirect";
+    }
+    if(status >= 200){
+        return "success";
+    }
+    return "unknown";
+}
+function filterRequests(){
+    const searchInput = document.getElementById("request-search");
+    if(!searchInput){
+        return;
+    }
+    const query = searchInput.value.trim().toLowerCase();
+    const filtered = currentRequests.filter(
+        (request) => {
+            return request.url.toLowerCase().includes(query);
+        }
+    );
+    renderRequests(sortRequests(filtered));
+}
+
+function sortRequests(requests){
+    const sortSelect = document.getElementById("request-sort");
+    if(!sortSelect){
+        return [...requests];
+    }
+    const sorted = [...requests];
+    switch(sortSelect.value){
+        case "time-desc":
+            sorted.sort(
+                (a,b) => (Number(b.time) || 0) - (Number(a.time) || 0)
+            );
+            break;
+        case "size-desc":
+            sorted.sort(
+                (a,b) => 
+                    (Number(b.responseSize) || 0) - (Number(a.responseSize) || 0)
+            );
+            break;
+        case "status":
+            sorted.sort(
+                (a,b) => 
+                (Number(a.status) || 0) - (Number(b.status) || 0)
+            );
+            break;
+    }
+    return sorted;
+}
+
+function setupRequestControls(){
+    const searchInput = document.getElementById("request-search");
+    const sortSelect = document.getElementById("request-sort");
+    if(searchInput){
+        searchInput.addEventListener("input",filterRequests);
+    }
+    if(sortSelect){
+        sortSelect.addEventListener("change",() => {
+            renderRequests(sortRequests(currentRequests));
+        });
+    }
 }
