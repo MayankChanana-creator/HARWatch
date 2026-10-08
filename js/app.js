@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(summaryCards){
         initializeReportPage();
     }
+    renderAnalysisHistory();
 });
 
 let currentRequests = [];
@@ -61,7 +62,7 @@ function initializeUploadPage() {
         try{
             setLoading(true);
             const har = await window.readHarFile(file);
-            const parsedData = window.parseHar(har);
+            const parsedData = await parseHARWithWorker(har);
             const analysis = window.analyzeHar(parsedData);
             console.log("Raw HAR:", har);
             console.log("Parsed HAR:", parsedData);
@@ -79,6 +80,7 @@ function initializeUploadPage() {
                 "harwatch-report",
                 JSON.stringify(reportData)
             );
+            saveAnalysisToHistory(reportData);
             showSuccess(file, parsedData);
 
         } 
@@ -942,3 +944,76 @@ document.addEventListener("DOMContentLoaded",() => {
 
     }
 );
+
+function parseHARWithWorker(har){
+    return new Promise((resolve,reject) => {
+        const worker = new Worker("./js/worker.js");
+        worker.onmessage = function(event){
+            const result = event.data;
+            worker.terminate();
+            if(!result.success){
+                reject(new Error(result.error));
+                return;
+            }
+            resolve(result.data);
+        };
+        worker.onerror = function(error) {
+            worker.terminate();
+            reject(new Error("HAR processing failed in Web Worker"));
+        };
+        worker.postMessage({har : har});
+    });
+}
+
+function renderAnalysisHistory(){
+    const historyList = document.getElementById("history-list");
+    if(!historyList){
+        return;
+    }
+    const history = getAnalysisHistory();
+    historyList.innerHTML = "";
+    if (history.length === 0) {
+        const emptyItem = document.createElement("li");
+        emptyItem.className = "text-muted";
+        emptyItem.textContent = "No saved analyses yet.";
+        historyList.appendChild(emptyItem);
+        return;
+    }
+
+    history.forEach(item => {
+        const listItem = document.createElement("li");
+        listItem.className = "history-item";
+        const date = new Date(item.timestamp);
+        listItem.innerHTML = `
+            <div class="history-item__main">
+                <strong>
+                    ${escapeHtml(item.filename)}
+                </strong>
+                <span class="history-item__date">
+                    ${formatHistoryDate(date)}
+                </span>
+            </div>
+            <div class="history-item__meta">
+                <span>
+                    ${item.totalRequests} requests
+                </span>
+                <span>
+                    ${item.summary?.totalFindings || 0} issues
+                </span>
+            </div>
+        `;
+        historyList.appendChild(listItem);
+    });
+}
+
+function formatHistoryDate(date){
+    if(!(date instanceof Date) || Number.isNaN(date.getTime())){
+        return "Unknown date";
+    }
+    return date.toLocaleString(undefined,
+        {
+            dateStyle: "medium",
+            timeStyle: "short"
+        }
+    );
+}
