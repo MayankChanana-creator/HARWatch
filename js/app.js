@@ -1,3 +1,75 @@
+function downloadFile(content, filename, mimeType){
+    const blob = new Blob([content], {
+        type: mimeType
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+function exportReportAsJSON(report){
+    if(!report){
+        alert("No report available to export.");
+        return;
+    }
+    const json = JSON.stringify(report, null, 2);
+    downloadFile(
+        json,
+        "harwatch-report.json",
+        "application/json;charset=utf-8"
+    );
+}
+
+function escapeCSV(value) {
+    const text = String(value ?? "");
+    return `"${text.replace(/"/g, '""')}"`;
+}
+
+function exportReportAsCSV(report){
+    if(!report || !report.data?.requests){
+        alert("No request data available to export.");
+        return;
+    }
+    const headers = [
+        "ID",
+        "URL",
+        "Method",
+        "Status",
+        "Type",
+        "Request Size (bytes)",
+        "Response Size (bytes)",
+        "Total Time (ms)",
+        "TTFB (ms)",
+        "Server IP"
+    ];
+    const rows = report.data.requests.map(request => [
+        request.id,
+        request.url,
+        request.method,
+        request.status,
+        request.mimeType,
+        request.requestSize,
+        request.responseSize,
+        request.time,
+        request.timings?.wait ?? 0,
+        request.serverIPAddress
+    ]);
+    const csv = [
+        headers.map(escapeCSV).join(","),
+        ...rows.map(row => row.map(escapeCSV).join(","))
+    ].join("\r\n");
+    downloadFile(
+        "\uFEFF" + csv,
+        "harwatch-requests.csv",
+        "text/csv;charset=utf-8"
+    );
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const dropZone = document.getElementById("drop-zone");
     if(dropZone){
@@ -6,6 +78,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const summaryCards = document.getElementById("summary-cards");
     if(summaryCards){
         initializeReportPage();
+    }
+    const jsonButton = document.getElementById("export-json-btn");
+
+    const csvButton = document.getElementById("export-csv-btn");
+
+    if(jsonButton){
+        jsonButton.addEventListener("click", () => {
+            const report = getStoredReport();
+            exportReportAsJSON(report);
+        });
+    }
+    if(csvButton){
+        csvButton.addEventListener("click", () => {
+            const report = getStoredReport();
+            exportReportAsCSV(report);
+        });
     }
     renderAnalysisHistory();
 });
